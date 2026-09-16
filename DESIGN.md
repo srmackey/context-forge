@@ -1,0 +1,84 @@
+# Context Forge — Design
+
+**Version 0.1**
+
+A local MCP server for durable, cross-host workspace memory. Markdown files are the source of truth. SQLite + FTS5 is a derived index. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`).
+
+This file is the public picture of how the system is structured. Install steps are in [README.md](README.md). What moved between versions is in [CHANGELOG.md](CHANGELOG.md). Contributor rules are in [AGENTS.md](AGENTS.md).
+
+## What it is for
+
+Hosts do not share sessions. A new sitting loads instructions, not last Tuesday. Context Forge is the write another agent in the same workspace is trained to pick up: working files (current state) and sittings (accreting freeze-frames).
+
+Write is explicit. If it is durable for a successor here, someone writes it. Retrieval is index over markdown, not a vibe.
+
+It is not a wiki (knowledge that left the workspace). It is not standing guidance. It is not a bulletin.
+
+## Types
+
+Two types. No domain ontology in the server.
+
+| Type | Role |
+|---|---|
+| **workspace** | Bound to a working folder. Slug is the folder basename unless bind names one. |
+| **document** | A markdown file under that workspace. Path is the name. |
+
+Refs are the path under the workspace: `workspace:harbor-notes/sittings/2026-09-16-first`.
+
+## Layers
+
+Two layers. They share permission and retrieval. They do not share a meaning the server has to know.
+
+| Layer | What | On disk |
+|---|---|---|
+| `working` | The set in play. Replaced in place. | Default for everything not under `sittings/` |
+| `sittings` | Freeze-frames of sittings. The pile that grows. | Folder `sittings/` |
+
+Layer is frontmatter, defaulted by path. The store does not validate the body. What may go in a file is the workspace owner's grain, not a server enum.
+
+## Layout
+
+```
+~/.contextforge/
+  config.json
+  .index/
+    store.db
+  workspaces/
+    harbor-notes/
+      _meta.md
+      sittings/
+        2026-09-16-first.md
+```
+
+`_meta.md` holds bind path, `always_include`, and `sensitive` (enforcement bit for a future cross-workspace API; v0.1 has no global search).
+
+## Tools (v0.1)
+
+All workspace-scoped.
+
+1. `bind_workspace` — register the folder, write `_meta.md`, ensure `sittings/`.
+2. `write` — path plus content. Generic. Sitting records use `sittings/YYYY-MM-DD-slug.md`. Overlay later uses the same tool.
+3. `get_pack` — `always_include` plus FTS over sittings matching the sitting's goal. Dropped hits listed, not silent.
+4. `search` — FTS inside one workspace only.
+
+Call or miss it. Same reliability as any store that is queried rather than auto-loaded.
+
+## Invariants
+
+- Markdown wins. The index is rebuildable.
+- No global FTS. A query in `river-ledger` cannot return `harbor-notes` documents.
+- Destructive path traversal is refused (`..`, absolute paths).
+- `sensitive: true` on `_meta.md` is reserved so a later cross-workspace API has something to refuse. v0.1 does not offer that API.
+- Promote-to-wiki is not a Context Forge tool. If a sitting transcends the workspace, another product writes the capture; this store only holds a pointer.
+
+## What it does not do
+
+- No vector / semantic search. FTS5 is the search.
+- No HTTP/SSE, no multi-tenancy. Stdio, one user.
+- No automatic workspace detection. `bind_workspace` is explicit.
+- No auto-capture, no transcript dump, no lint of document bodies.
+- No wiki write.
+
+## Runtime vs this repo
+
+The product store is `~/.contextforge/`. This git repo is the server, the tests, and the contributor docs. Do not treat the checkout as the vault.
