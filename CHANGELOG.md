@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0
+
+- Session brief on the pack: reserved path `syos.md`. `get_pack` returns `syos`, `syos_parked`, and `syos_wait`.
+- `write_working` to `syos.md` posts a new current brief (`check` + `jump`), parks with `later: true`, or clears with `clear: current|parked|all`. No new tools.
+- One current (wait) and one parked (no wait). A third parked brief overflows to `sittings/YYYY-MM-DD-syos-parked.md`.
+- `syos_wait` true means present the brief and wait. Empty fields stay on the pack so the sitting knows it looked.
+
 ## 0.2.0
 
 - Public contract 0.2.0: working overlay lives in the store at the chair's relative paths. Checkout overlay is not the home.

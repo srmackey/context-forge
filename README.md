@@ -30,9 +30,9 @@ Every tool is workspace-scoped. Bind first, or miss it.
 
 | Tool | Job |
 |---|---|
-| `get_pack` | Session-start card. Pass `path` to bind if needed. |
+| `get_pack` | Session-start card. Pass `path` to bind if needed. Includes `syos`, `syos_parked`, `syos_wait`. |
 | `write` | Sitting freeze-frame under `sittings/`. |
-| `write_working` | Working overlay. Not under `sittings/`. |
+| `write_working` | Working overlay. Not under `sittings/`. `syos.md` is the session brief. |
 | `search` | FTS inside one workspace when the pack is too narrow. |
 | `bind_workspace` | Bind a folder only. Optional `always_include`. Skip if `get_pack` already has `path`. |
 
@@ -42,4 +42,4 @@ A sitting record lives at `sittings/YYYY-MM-DD-slug.md`. Layer defaults from tha
 
 Fixtures use fictional workspaces only (`harbor-notes`, `river-ledger`). Do not point a test run at a real vault.
 
-Locked behavior: [`DESIGN.md`](DESIGN.md) (v0.2).
+Locked behavior: [`DESIGN.md`](DESIGN.md) (v0.3).

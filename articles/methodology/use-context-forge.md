@@ -10,9 +10,10 @@ Context Forge is workspace memory: working files and sitting records. Markdown o
 
 ## When it fires
 
-- **Session start** in a folder this store should remember: `get_pack` for this workspace. Pass `path` if it may not be bound yet. That is the card. Do not walk `search` for this view. Without `query`, the card is `always_include` only (no sittings).
+- **Session start** in a folder this store should remember: `get_pack` for this workspace. Pass `path` if it may not be bound yet. That is the card. Do not walk `search` for this view. Without `query`, the card is `always_include` only (no sittings). The card always names `syos`, `syos_parked`, and `syos_wait` (empty when absent).
 - **A durable freeze-frame** for a successor in this workspace: `write` to `sittings/YYYY-MM-DD-slug.md`. Not every turn. Not a transcript. Not a wiki page.
 - **The set in play** (working overlay): `write_working`. Not a sitting. Not session start. Those files live in this store at the chair's relative paths (`_status/`, `inbox/`, `_system/` when those are overlay). Checkout overlay is not the home.
+- **A session brief** for the next sitting here: `write_working` to `syos.md`. Two beats: `check` and `jump`. If `syos_wait` is true on the pack, present the brief and wait. If only `syos_parked` is set, show it on the readout and do not freeze. `later: true` parks current. `clear: current|parked|all` clears. Act or skip clears that slot. Do not call a second tool.
 - **A lookup the pack did not cover:** `search` inside that workspace only.
 
 If the `contextforge` tools are missing, the MCP server is not connected. See `install/mcp.json.examples.md`. Do not invent a parallel file store.

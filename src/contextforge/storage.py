@@ -10,6 +10,7 @@ from typing import Any
 import frontmatter
 
 _META_FILE = "_meta.md"
+_SYOS_FILE = "syos.md"
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS documents (
@@ -164,6 +165,9 @@ class Storage:
         return self._put(workspace, path, content, want_layer="sittings", try_tool="write_working")
 
     def write_working(self, workspace: str, path: str, content: str) -> dict[str, Any]:
+        rel = safe_relpath(path)
+        if rel == _SYOS_FILE:
+            return self._put_syos(workspace, content)
         return self._put(workspace, path, content, want_layer="working", try_tool="write")
 
     def _put(
@@ -251,6 +255,7 @@ class Storage:
             cap = max(1, int(limit))
             hits = found[:cap]
             dropped = [d["path"] for d in found[cap:]]
+        syos = self._syos_state(workspace)
         return {
             "workspace": workspace,
             "always_include": included,
@@ -258,7 +263,124 @@ class Storage:
             "sittings": hits,
             "dropped": dropped,
             "sensitive": meta["sensitive"],
+            "syos": syos["current"],
+            "syos_parked": syos["parked"],
+            "syos_wait": syos["current"] is not None,
         }
+
+    def _syos_path(self, workspace: str) -> Path:
+        return self.workspace_dir(workspace) / _SYOS_FILE
+
+    def _syos_state(self, workspace: str) -> dict[str, Any]:
+        dest = self._syos_path(workspace)
+        if not dest.exists():
+            return {"current": None, "parked": None}
+        post = frontmatter.loads(dest.read_text(encoding="utf-8"))
+        return {
+            "current": _brief(post.get("current")),
+            "parked": _brief(post.get("parked")),
+        }
+
+    def _put_syos(self, workspace: str, content: str) -> dict[str, Any]:
+        self.read_meta(workspace)
+        post = frontmatter.loads(content or "")
+        state = self._syos_state(workspace)
+        if _is_blank(content) or str(post.get("clear") or "").strip() == "all":
+            state = {"current": None, "parked": None}
+        elif str(post.get("clear") or "").strip() == "current":
+            state["current"] = None
+        elif str(post.get("clear") or "").strip() == "parked":
+            state["parked"] = None
+        elif post.get("later") is True or str(post.get("later") or "").strip().lower() == "true":
+            if state["current"] is not None:
+                state = self._park_current(workspace, state)
+        else:
+            incoming = _brief(
+                {
+                    "check": post.get("check"),
+                    "jump": post.get("jump"),
+                }
+            )
+            if incoming is None:
+                raise ValueError(
+                    "syos.md writes are check+jump (new brief), later: true, "
+                    "or clear: current|parked|all"
+                )
+            state["current"] = incoming
+        return self._save_syos(workspace, state)
+
+    def _park_current(self, workspace: str, state: dict[str, Any]) -> dict[str, Any]:
+        current = state.get("current")
+        if current is None:
+            return state
+        parked = state.get("parked")
+        if parked is not None:
+            self._overflow_parked(workspace, parked)
+        return {"current": None, "parked": current}
+
+    def _overflow_parked(self, workspace: str, parked: dict[str, str]) -> None:
+        day = _now()[:10]
+        rel = f"sittings/{day}-syos-parked.md"
+        root = self.workspace_dir(workspace)
+        dest = root / Path(*rel.split("/"))
+        n = 2
+        while dest.exists():
+            rel = f"sittings/{day}-syos-parked-{n}.md"
+            dest = root / Path(*rel.split("/"))
+            n += 1
+        body = (
+            f"---\ntitle: Parked syos\ndate: {day}\n---\n\n"
+            f"# Parked syos\n\n"
+            f"Check: {parked.get('check') or ''}\n\n"
+            f"Jump: {parked.get('jump') or ''}\n"
+        )
+        self._put(workspace, rel, body, want_layer="sittings", try_tool="write_working")
+
+    def _save_syos(self, workspace: str, state: dict[str, Any]) -> dict[str, Any]:
+        dest = self._syos_path(workspace)
+        current = state.get("current")
+        parked = state.get("parked")
+        if current is None and parked is None:
+            if dest.exists():
+                dest.unlink()
+                self._unindex_file(workspace, _SYOS_FILE)
+                self._db().commit()
+            return {
+                "workspace": workspace,
+                "path": _SYOS_FILE,
+                "title": "syos",
+                "layer": "working",
+                "content": "",
+                "updated_at": _now(),
+                "syos": None,
+                "syos_parked": None,
+                "syos_wait": False,
+            }
+        post = frontmatter.Post("Session brief. Current waits; parked does not.\n")
+        if current is not None:
+            post["current"] = current
+        if parked is not None:
+            post["parked"] = parked
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(frontmatter.dumps(post) + "\n", encoding="utf-8")
+        doc = self._index_file(workspace, _SYOS_FILE)
+        self._db().commit()
+        doc["syos"] = current
+        doc["syos_parked"] = parked
+        doc["syos_wait"] = current is not None
+        return doc
+
+    def _unindex_file(self, workspace: str, rel: str) -> None:
+        db = self._db()
+        with self._lock:
+            db.execute(
+                "DELETE FROM documents_fts WHERE workspace = ? AND path = ?",
+                (workspace, rel),
+            )
+            db.execute(
+                "DELETE FROM documents WHERE workspace = ? AND path = ?",
+                (workspace, rel),
+            )
 
     def _document_from_file(self, workspace: str, rel: str, dest: Path) -> dict[str, Any]:
         text = dest.read_text(encoding="utf-8")
@@ -309,6 +431,20 @@ class Storage:
                 (doc["workspace"], doc["path"], doc["title"], doc["content"]),
             )
         return doc
+
+
+def _is_blank(content: str) -> bool:
+    return not (content or "").strip()
+
+
+def _brief(val: Any) -> dict[str, str] | None:
+    if not isinstance(val, dict):
+        return None
+    check = str(val.get("check") or "").strip()
+    jump = str(val.get("jump") or "").strip()
+    if not check or not jump:
+        return None
+    return {"check": check, "jump": jump}
 
 
 def _title_from_body(body: str) -> str | None:

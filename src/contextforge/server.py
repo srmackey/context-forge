@@ -21,6 +21,7 @@ is the source of truth; SQLite+FTS5 is derived. There is no global search.
 
 Session start: get_pack for this workspace. Pass path if it may not be bound yet.
 That card binds if needed. Do not walk search for the common sitting view.
+If syos_wait is true, present the brief and wait.
 
 Write a sitting when something is durable for a successor here:
 write sittings/YYYY-MM-DD-slug.md. Overlay / working files: write_working.
@@ -127,9 +128,10 @@ def write_working(workspace: str, path: str, content: str) -> dict[str, Any]:
     """Write a working overlay file. Writes.
 
     Use to update the set in play (working layer). Path must not be under sittings/.
-    Do not use for sitting freeze-frames; that is write.
-    Do not use as session start; that is get_pack. Not a settle or status API.
-    Do not write _meta.md; that is bind_workspace.
+    Reserved path syos.md is the session brief: check+jump posts current,
+    later: true parks it, clear: current|parked|all. Do not use for sitting
+    freeze-frames; that is write. Do not use as session start; that is get_pack.
+    Not a settle or status API. Do not write _meta.md; that is bind_workspace.
     If the workspace is not bound, the result names bind_workspace.
 
     Returns the written document (path, layer, title) plus summary.
@@ -161,7 +163,8 @@ def get_pack(
     Pass query for the sitting's goal. Dropped hits are listed, not silent.
     Do not walk search for this view. Do not use to write.
 
-    Returns always_include, sittings, dropped, missing_include, plus summary.
+    Returns always_include, sittings, dropped, missing_include, syos, syos_parked,
+    syos_wait, plus summary. syos_wait true means present the brief and wait.
     Writes only if path is set and bind runs.
     """
     try:
@@ -174,10 +177,18 @@ def get_pack(
     summary = f"Pack for {pack['workspace']}: {n_inc} always_include, {n_sit} sittings."
     if dropped:
         summary += f" {len(dropped)} dropped."
+    if pack.get("syos_wait"):
+        summary += " Syos present: present the brief and wait."
+        nxt = "Syos is present. Present the brief and wait."
+    elif pack.get("syos_parked"):
+        summary += " Parked syos on the pack, no wait."
+        nxt = "Write a sitting if something is durable for a successor here."
+    else:
+        nxt = "Write a sitting if something is durable for a successor here."
     return {
         "ok": True,
         "summary": summary,
-        "next": "Write a sitting if something is durable for a successor here.",
+        "next": nxt,
         **pack,
     }
 
