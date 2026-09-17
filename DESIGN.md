@@ -46,6 +46,8 @@ Layer is frontmatter, defaulted by path. The store does not validate the body. W
   workspaces/
     harbor-notes/
       _meta.md
+      _status/
+        STATUS.md
       sittings/
         2026-09-16-first.md
 ```

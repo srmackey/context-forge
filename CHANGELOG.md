@@ -2,6 +2,7 @@
 
 ## 0.2.0
 
+- Public contract 0.2.0: working overlay lives in the store at the chair's relative paths. Checkout overlay is not the home.
 - Added `write_working` for working overlay. `write` is sittings only. Wrong-layer results name the other write tool.
 - `bind_workspace` takes optional `always_include` (owner list on the session card; omit leaves it).
 - Both writes refuse `_meta.md`.

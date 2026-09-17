@@ -12,7 +12,7 @@ Context Forge is workspace memory: working files and sitting records. Markdown o
 
 - **Session start** in a folder this store should remember: `get_pack` for this workspace. Pass `path` if it may not be bound yet. That is the card. Do not walk `search` for this view. Without `query`, the card is `always_include` only (no sittings).
 - **A durable freeze-frame** for a successor in this workspace: `write` to `sittings/YYYY-MM-DD-slug.md`. Not every turn. Not a transcript. Not a wiki page.
-- **The set in play** (working overlay): `write_working`. Not a sitting. Not session start.
+- **The set in play** (working overlay): `write_working`. Not a sitting. Not session start. Those files live in this store at the chair's relative paths (`_status/`, `inbox/`, `_system/` when those are overlay). Checkout overlay is not the home.
 - **A lookup the pack did not cover:** `search` inside that workspace only.
 
 If the `contextforge` tools are missing, the MCP server is not connected. See `install/mcp.json.examples.md`. Do not invent a parallel file store.
@@ -22,7 +22,7 @@ If the `contextforge` tools are missing, the MCP server is not connected. See `i
 - Standing guidance (constitutions, articles, composed protocol).
 - Cross-workspace chatter or a published bulletin.
 - Knowledge that left the workspace (a wiki capture). Context Forge does not write the wiki. If a sitting transcends the workspace, another product takes the capture; this store may hold a pointer.
-- Settle / status. This server is not that card.
+- The settle operation (`methodology/settle`). This server holds the overlay files settle reads and writes. It does not run settle.
 
 ## Tools
 

@@ -6,7 +6,7 @@ Tools (workspace-scoped, no global search): `get_pack`, `write`, `write_working`
 
 - Session start: `get_pack` for this workspace. Pass `path` if it may not be bound yet.
 - Durable freeze-frame for a successor here: `write` `sittings/YYYY-MM-DD-slug.md`. Not every turn.
-- Overlay / working files: `write_working`. Not `write`.
+- Overlay / working files: `write_working`. Not `write`. Those files live in this store at the chair's relative paths. Checkout overlay is not the home.
 - Lookup the pack missed: `search` in that workspace only.
 - Bind-only: `bind_workspace`. Skip if `get_pack` already has `path`.
 
