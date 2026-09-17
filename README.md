@@ -22,7 +22,7 @@ uv run contextforge
 |---|---|
 | `CONTEXTFORGE_HOME` | Vault root (default `~/.contextforge`; or pass `--vault`) |
 
-MCP host snippets: [`install/mcp.json.examples.md`](install/mcp.json.examples.md).
+MCP host snippets: [`install/mcp.json.examples.md`](install/mcp.json.examples.md). Global host seed (so a new agent knows the tools exist): [`install/README.md`](install/README.md).
 
 ## Tools
 
@@ -30,10 +30,10 @@ Every tool is workspace-scoped. Bind first, or miss it.
 
 | Tool | Job |
 |---|---|
-| `bind_workspace` | Bind a folder. Slug defaults to the folder basename. Writes `_meta.md`. |
+| `get_pack` | Session-start card. Pass `path` to bind if needed. |
 | `write` | Write a markdown document at a path inside that workspace. |
-| `get_pack` | `always_include` plus FTS over sittings matching a query. Dropped hits are listed. |
-| `search` | FTS inside one workspace only. |
+| `search` | FTS inside one workspace when the pack is too narrow. |
+| `bind_workspace` | Bind a folder only. Skip if `get_pack` already has `path`. |
 
 A sitting record lives at `sittings/YYYY-MM-DD-slug.md`. Layer defaults from that path.
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from contextforge.storage import safe_relpath
+from contextforge.storage import UnboundWorkspace, safe_relpath
 
 
 def test_bind_defaults_slug_to_folder_name(store, tmp_path):
@@ -56,3 +56,17 @@ def test_refuses_escape_paths():
 def test_write_refuses_escape(store, harbor):
     with pytest.raises(ValueError):
         store.write(harbor, "../outside.md", "nope")
+
+
+def test_write_unbound_names_the_workspace(store):
+    with pytest.raises(UnboundWorkspace) as exc:
+        store.write("harbor-notes", "sittings/2026-09-16-x.md", "# x\n")
+    assert exc.value.workspace == "harbor-notes"
+
+
+def test_get_pack_with_path_binds(store, tmp_path):
+    folder = tmp_path / "harbor-notes"
+    folder.mkdir()
+    pack = store.get_pack("harbor-notes", query=None, path=str(folder))
+    assert pack["workspace"] == "harbor-notes"
+    assert (store.workspace_dir("harbor-notes") / "_meta.md").exists()

@@ -54,14 +54,14 @@ Layer is frontmatter, defaulted by path. The store does not validate the body. W
 
 ## Tools (v0.1)
 
-All workspace-scoped.
+All workspace-scoped. Each result carries `ok`, `summary`, and (on success) `next` or (if unbound) `try`.
 
-1. `bind_workspace` — register the folder, write `_meta.md`, ensure `sittings/`.
-2. `write` — path plus content. Generic. Sitting records use `sittings/YYYY-MM-DD-slug.md`. Overlay later uses the same tool.
-3. `get_pack` — `always_include` plus FTS over sittings matching the sitting's goal. Dropped hits listed, not silent.
-4. `search` — FTS inside one workspace only.
+1. `get_pack` — session-start card: `always_include` plus FTS sittings. Pass `path` to bind if the workspace may be new. Dropped hits listed, not silent.
+2. `write` — path plus content. Sitting records use `sittings/YYYY-MM-DD-slug.md`. Overlay later uses the same tool.
+3. `search` — FTS inside one workspace when the pack is too narrow. Returns `{summary, count, hits}`, not a bare list.
+4. `bind_workspace` — register the folder only. Idempotent. Skip if `get_pack` already has `path`.
 
-Call or miss it. Same reliability as any store that is queried rather than auto-loaded.
+Call or miss it. Same reliability as any store that is queried rather than auto-loaded. Bind-then-write is not a required session order: `get_pack` with `path` is independently valid; an unbound `write` or `search` names `bind_workspace`.
 
 ## Invariants
 
@@ -75,7 +75,7 @@ Call or miss it. Same reliability as any store that is queried rather than auto-
 
 - No vector / semantic search. FTS5 is the search.
 - No HTTP/SSE, no multi-tenancy. Stdio, one user.
-- No automatic workspace detection. `bind_workspace` is explicit.
+- No silent workspace detection from cwd. Bind is explicit: `bind_workspace`, or `get_pack` with `path`.
 - No auto-capture, no transcript dump, no lint of document bodies.
 - No wiki write.
 

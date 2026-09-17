@@ -61,6 +61,14 @@ def safe_relpath(path: str) -> str:
     return "/".join(parts)
 
 
+class UnboundWorkspace(FileNotFoundError):
+    """Workspace has no _meta.md. Call bind_workspace, or get_pack with path."""
+
+    def __init__(self, workspace: str):
+        super().__init__(f"workspace not bound: {workspace}")
+        self.workspace = workspace
+
+
 class Storage:
     def __init__(self, home: Path | None = None):
         self.home = Path(home) if home is not None else default_home()
@@ -100,7 +108,7 @@ class Storage:
     def read_meta(self, workspace: str) -> dict[str, Any]:
         path = self._meta_path(workspace)
         if not path.exists():
-            raise FileNotFoundError(f"workspace not bound: {workspace}")
+            raise UnboundWorkspace(workspace)
         post = frontmatter.loads(path.read_text(encoding="utf-8"))
         always = post.get("always_include") or []
         if isinstance(always, str):
@@ -184,8 +192,13 @@ class Storage:
         workspace: str,
         query: str | None = None,
         limit: int = 8,
+        path: str | None = None,
     ) -> dict[str, Any]:
-        meta = self.read_meta(workspace)
+        if path:
+            meta = self.bind_workspace(path, slug=workspace or None)
+            workspace = meta["workspace"]
+        else:
+            meta = self.read_meta(workspace)
         included: list[dict[str, Any]] = []
         missing: list[str] = []
         for rel in meta["always_include"]:

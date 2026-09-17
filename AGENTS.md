@@ -51,4 +51,6 @@ Attribution in LICENSE and commit authorship is the intended exception.
 | `DESIGN.md` | How the system is structured |
 | `src/contextforge/` | Server package |
 | `tests/` | pytest |
-| `install/` | MCP host snippets (not user-vault data) |
+| `install/` | MCP json snippets and global host-seed routers |
+| `articles/` | Public contract source |
+| `provisions/pack.yaml` | Extract list for that contract |

@@ -2,6 +2,8 @@
 
 Context Forge is one process and one vault. Set the vault with `CONTEXTFORGE_HOME`, or pass `--vault`. If neither is set, the server uses `~/.contextforge`.
 
+This file starts the server. The global host seed (`install/routers/`) is what tells a new agent the tools exist. See `install/README.md`.
+
 Replace the repo path with your checkout.
 
 ## Cursor (`~/.cursor/mcp.json` or project `.cursor/mcp.json`)
