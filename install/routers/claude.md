@@ -2,10 +2,11 @@
 
 Context Forge is a local MCP for workspace memory: working files and sitting records. Markdown under `~/.contextforge/` (override `CONTEXTFORGE_HOME`). Not a wiki, not standing guidance, not a bulletin.
 
-Tools (workspace-scoped, no global search): `get_pack`, `write`, `search`, `bind_workspace`.
+Tools (workspace-scoped, no global search): `get_pack`, `write`, `write_working`, `search`, `bind_workspace`.
 
 - Session start: `get_pack` for this workspace. Pass `path` if it may not be bound yet.
 - Durable freeze-frame for a successor here: `write` `sittings/YYYY-MM-DD-slug.md`. Not every turn.
+- Overlay / working files: `write_working`. Not `write`.
 - Lookup the pack missed: `search` in that workspace only.
 - Bind-only: `bind_workspace`. Skip if `get_pack` already has `path`.
 

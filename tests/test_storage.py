@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from contextforge.storage import UnboundWorkspace, safe_relpath
+from contextforge.storage import UnboundWorkspace, WrongLayer, safe_relpath
 
 
 def test_bind_defaults_slug_to_folder_name(store, tmp_path):
@@ -70,3 +70,42 @@ def test_get_pack_with_path_binds(store, tmp_path):
     pack = store.get_pack("harbor-notes", query=None, path=str(folder))
     assert pack["workspace"] == "harbor-notes"
     assert (store.workspace_dir("harbor-notes") / "_meta.md").exists()
+
+
+def test_write_working_path_is_wrong_layer(store, harbor):
+    with pytest.raises(WrongLayer) as exc:
+        store.write(harbor, "_status/now.md", "# Now\n")
+    assert exc.value.try_tool == "write_working"
+
+
+def test_write_working_sitting_path_is_wrong_layer(store, harbor):
+    with pytest.raises(WrongLayer) as exc:
+        store.write_working(harbor, "sittings/2026-09-16-x.md", "# x\n")
+    assert exc.value.try_tool == "write"
+
+
+def test_write_refuses_meta(store, harbor):
+    with pytest.raises(ValueError, match="_meta"):
+        store.write(harbor, "_meta.md", "nope\n")
+
+
+def test_write_working_refuses_meta(store, harbor):
+    with pytest.raises(ValueError, match="_meta"):
+        store.write_working(harbor, "_meta.md", "nope\n")
+
+
+def test_write_working_defaults_layer(store, harbor):
+    doc = store.write_working(harbor, "_status/now.md", "# Harbor now\n\nQuay is open.\n")
+    assert doc["layer"] == "working"
+    assert doc["path"] == "_status/now.md"
+
+
+def test_bind_always_include_shows_in_pack_without_query(store, tmp_path, harbor):
+    store.write_working(harbor, "_status/now.md", "# Harbor now\n\nQuay is open.\n")
+    folder = tmp_path / "harbor-notes"
+    meta = store.bind_workspace(str(folder), always_include=["_status/now.md"])
+    assert meta["always_include"] == ["_status/now.md"]
+    pack = store.get_pack(harbor, query=None)
+    assert pack["sittings"] == []
+    assert len(pack["always_include"]) == 1
+    assert pack["always_include"][0]["path"] == "_status/now.md"

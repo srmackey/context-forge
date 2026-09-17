@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- Added `write_working` for working overlay. `write` is sittings only. Wrong-layer results name the other write tool.
+- `bind_workspace` takes optional `always_include` (owner list on the session card; omit leaves it).
+- Both writes refuse `_meta.md`.
+
 ## 0.1.0
 
 - Workspace memory MCP. Types: workspace, document. Layers: `working`, `sittings`.

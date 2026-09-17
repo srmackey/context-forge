@@ -27,3 +27,16 @@ def test_get_pack_does_not_cross_workspaces(store, harbor, river):
     pack = store.get_pack(river, query="quayside-lantern")
     assert pack["sittings"] == []
     assert pack["workspace"] == "river-ledger"
+
+
+def test_write_working_does_not_cross_workspaces(store, harbor, river):
+    store.write_working(
+        harbor,
+        "_status/now.md",
+        "# Harbor now\n\nUnique phrase tide-bell-marker.\n",
+    )
+    river_hits = store.search(river, "tide-bell-marker")
+    assert river_hits == []
+    pack = store.get_pack(river, query="tide-bell-marker")
+    assert pack["sittings"] == []
+    assert pack["always_include"] == []

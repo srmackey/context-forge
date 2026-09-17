@@ -1,6 +1,6 @@
 # Context Forge — Design
 
-**Version 0.1**
+**Version 0.2**
 
 A local MCP server for durable, cross-host workspace memory. Markdown files are the source of truth. SQLite + FTS5 is a derived index. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`).
 
@@ -50,16 +50,17 @@ Layer is frontmatter, defaulted by path. The store does not validate the body. W
         2026-09-16-first.md
 ```
 
-`_meta.md` holds bind path, `always_include`, and `sensitive` (enforcement bit for a future cross-workspace API; v0.1 has no global search).
+`_meta.md` holds bind path, `always_include`, and `sensitive` (enforcement bit for a future cross-workspace API; v0.2 has no global search).
 
-## Tools (v0.1)
+## Tools (v0.2)
 
 All workspace-scoped. Each result carries `ok`, `summary`, and (on success) `next` or (if unbound) `try`.
 
-1. `get_pack` — session-start card: `always_include` plus FTS sittings. Pass `path` to bind if the workspace may be new. Dropped hits listed, not silent.
-2. `write` — path plus content. Sitting records use `sittings/YYYY-MM-DD-slug.md`. Overlay later uses the same tool.
-3. `search` — FTS inside one workspace when the pack is too narrow. Returns `{summary, count, hits}`, not a bare list.
-4. `bind_workspace` — register the folder only. Idempotent. Skip if `get_pack` already has `path`.
+1. `get_pack` — session-start card: `always_include` plus FTS sittings. Pass `path` to bind if the workspace may be new. Without `query`, sittings are empty. Dropped hits listed, not silent. Not a settle API.
+2. `write` — sitting freeze-frame. Path must be under `sittings/`. Convention: `sittings/YYYY-MM-DD-slug.md`.
+3. `write_working` — working overlay. Path must not be under `sittings/`. Wrong-layer calls name the other write tool.
+4. `search` — FTS inside one workspace when the pack is too narrow. Returns `{summary, count, hits}`, not a bare list.
+5. `bind_workspace` — register the folder only. Idempotent. Optional `always_include` replaces the owner list on the card. Skip if `get_pack` already has `path`.
 
 Call or miss it. Same reliability as any store that is queried rather than auto-loaded. Bind-then-write is not a required session order: `get_pack` with `path` is independently valid; an unbound `write` or `search` names `bind_workspace`.
 
@@ -68,7 +69,7 @@ Call or miss it. Same reliability as any store that is queried rather than auto-
 - Markdown wins. The index is rebuildable.
 - No global FTS. A query in `river-ledger` cannot return `harbor-notes` documents.
 - Destructive path traversal is refused (`..`, absolute paths).
-- `sensitive: true` on `_meta.md` is reserved so a later cross-workspace API has something to refuse. v0.1 does not offer that API.
+- `sensitive: true` on `_meta.md` is reserved so a later cross-workspace API has something to refuse. v0.2 does not offer that API.
 - Promote-to-wiki is not a Context Forge tool. If a sitting transcends the workspace, another product writes the capture; this store only holds a pointer.
 
 ## What it does not do

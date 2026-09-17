@@ -31,9 +31,10 @@ Every tool is workspace-scoped. Bind first, or miss it.
 | Tool | Job |
 |---|---|
 | `get_pack` | Session-start card. Pass `path` to bind if needed. |
-| `write` | Write a markdown document at a path inside that workspace. |
+| `write` | Sitting freeze-frame under `sittings/`. |
+| `write_working` | Working overlay. Not under `sittings/`. |
 | `search` | FTS inside one workspace when the pack is too narrow. |
-| `bind_workspace` | Bind a folder only. Skip if `get_pack` already has `path`. |
+| `bind_workspace` | Bind a folder only. Optional `always_include`. Skip if `get_pack` already has `path`. |
 
 A sitting record lives at `sittings/YYYY-MM-DD-slug.md`. Layer defaults from that path.
 
@@ -41,4 +42,4 @@ A sitting record lives at `sittings/YYYY-MM-DD-slug.md`. Layer defaults from tha
 
 Fixtures use fictional workspaces only (`harbor-notes`, `river-ledger`). Do not point a test run at a real vault.
 
-Locked behavior: [`DESIGN.md`](DESIGN.md) (v0.1).
+Locked behavior: [`DESIGN.md`](DESIGN.md) (v0.2).

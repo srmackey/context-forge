@@ -8,7 +8,7 @@ from typing import Any
 
 from fastmcp import FastMCP
 
-from .storage import Storage, UnboundWorkspace
+from .storage import Storage, UnboundWorkspace, WrongLayer
 
 INSTRUCTIONS = """\
 Context Forge: local workspace memory.
@@ -23,7 +23,8 @@ Session start: get_pack for this workspace. Pass path if it may not be bound yet
 That card binds if needed. Do not walk search for the common sitting view.
 
 Write a sitting when something is durable for a successor here:
-sittings/YYYY-MM-DD-slug.md. Not every turn. Not a wiki.
+write sittings/YYYY-MM-DD-slug.md. Overlay / working files: write_working.
+Not every turn. Not a wiki.
 
 If a workspace is not bound, the result names bind_workspace (or get_pack with path).
 """
@@ -51,22 +52,41 @@ def _unbound(workspace: str) -> dict[str, Any]:
     }
 
 
+def _write_fail(workspace: str, path: str, exc: Exception) -> dict[str, Any]:
+    out: dict[str, Any] = {
+        "ok": False,
+        "summary": str(exc),
+        "path": path,
+        "workspace": workspace,
+    }
+    try_tool = getattr(exc, "try_tool", None)
+    if try_tool:
+        out["try"] = try_tool
+    return out
+
+
 _setup_logging()
 mcp = FastMCP("ContextForge", instructions=INSTRUCTIONS)
 _storage = Storage()
 
 
 @mcp.tool
-def bind_workspace(path: str, slug: str | None = None) -> dict[str, Any]:
+def bind_workspace(
+    path: str,
+    slug: str | None = None,
+    always_include: list[str] | None = None,
+) -> dict[str, Any]:
     """Register a folder as a workspace. Writes. Idempotent.
 
     Use when this folder is not bound yet, or to refresh the bind path.
+    Optional always_include replaces the owner list of working paths on the session card.
+    Omit it to leave the list. Empty list clears. Do not invent defaults.
     Do not use for the sitting view; that is get_pack (pass path there if unbound).
-    Do not use to write a sitting; that is write.
+    Do not use to write a sitting; that is write. Overlay is write_working.
 
     Returns the workspace meta (slug, bind, always_include, sensitive) plus summary.
     """
-    meta = _storage.bind_workspace(path, slug)
+    meta = _storage.bind_workspace(path, slug, always_include=always_include)
     ws = meta["workspace"]
     return {
         "ok": True,
@@ -78,10 +98,11 @@ def bind_workspace(path: str, slug: str | None = None) -> dict[str, Any]:
 
 @mcp.tool
 def write(workspace: str, path: str, content: str) -> dict[str, Any]:
-    """Write a markdown document in one workspace. Writes.
+    """Write a sitting freeze-frame. Writes.
 
-    Use when something is durable for a successor in this workspace.
-    Sitting freeze-frames go at sittings/YYYY-MM-DD-slug.md. Layer defaults from path.
+    Use when something is durable for a successor here.
+    Path must be under sittings/. Convention: sittings/YYYY-MM-DD-slug.md.
+    Do not use for overlay or working files; that is write_working.
     Do not use for a wiki or standing guidance. Do not use to read; that is get_pack or search.
     If the workspace is not bound, the result names bind_workspace.
 
@@ -91,10 +112,38 @@ def write(workspace: str, path: str, content: str) -> dict[str, Any]:
         doc = _storage.write(workspace, path, content)
     except UnboundWorkspace as exc:
         return _unbound(exc.workspace)
+    except (WrongLayer, ValueError) as exc:
+        return _write_fail(workspace, path, exc)
     return {
         "ok": True,
         "summary": f"Wrote {doc['path']} ({doc['layer']}) in {workspace}.",
         "next": "Call get_pack if a successor needs this in view. Do not write a wiki from this tool.",
+        **doc,
+    }
+
+
+@mcp.tool
+def write_working(workspace: str, path: str, content: str) -> dict[str, Any]:
+    """Write a working overlay file. Writes.
+
+    Use to update the set in play (working layer). Path must not be under sittings/.
+    Do not use for sitting freeze-frames; that is write.
+    Do not use as session start; that is get_pack. Not a settle or status API.
+    Do not write _meta.md; that is bind_workspace.
+    If the workspace is not bound, the result names bind_workspace.
+
+    Returns the written document (path, layer, title) plus summary.
+    """
+    try:
+        doc = _storage.write_working(workspace, path, content)
+    except UnboundWorkspace as exc:
+        return _unbound(exc.workspace)
+    except (WrongLayer, ValueError) as exc:
+        return _write_fail(workspace, path, exc)
+    return {
+        "ok": True,
+        "summary": f"Wrote {doc['path']} ({doc['layer']}) in {workspace}.",
+        "next": "Call get_pack if a successor needs this in view.",
         **doc,
     }
 

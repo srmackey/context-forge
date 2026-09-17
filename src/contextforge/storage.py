@@ -69,6 +69,15 @@ class UnboundWorkspace(FileNotFoundError):
         self.workspace = workspace
 
 
+class WrongLayer(ValueError):
+    """Path belongs to the other write tool."""
+
+    def __init__(self, path: str, try_tool: str):
+        super().__init__(f"path {path!r} is the wrong layer; try {try_tool}")
+        self.path = path
+        self.try_tool = try_tool
+
+
 class Storage:
     def __init__(self, home: Path | None = None):
         self.home = Path(home) if home is not None else default_home()
@@ -120,7 +129,12 @@ class Storage:
             "sensitive": bool(post.get("sensitive", False)),
         }
 
-    def bind_workspace(self, path: str, slug: str | None = None) -> dict[str, Any]:
+    def bind_workspace(
+        self,
+        path: str,
+        slug: str | None = None,
+        always_include: list[str] | None = None,
+    ) -> dict[str, Any]:
         bind_path = str(Path(path).expanduser())
         workspace = (slug or Path(bind_path).name).strip()
         if not workspace:
@@ -139,14 +153,33 @@ class Storage:
             post["bind"] = bind_path
             post["always_include"] = []
             post["sensitive"] = False
+        if always_include is not None:
+            post["always_include"] = [safe_relpath(p) for p in always_include]
         meta_path.write_text(frontmatter.dumps(post) + "\n", encoding="utf-8")
         self._index_file(workspace, _META_FILE)
         self._db().commit()
         return self.read_meta(workspace)
 
     def write(self, workspace: str, path: str, content: str) -> dict[str, Any]:
+        return self._put(workspace, path, content, want_layer="sittings", try_tool="write_working")
+
+    def write_working(self, workspace: str, path: str, content: str) -> dict[str, Any]:
+        return self._put(workspace, path, content, want_layer="working", try_tool="write")
+
+    def _put(
+        self,
+        workspace: str,
+        path: str,
+        content: str,
+        want_layer: str,
+        try_tool: str,
+    ) -> dict[str, Any]:
         self.read_meta(workspace)
         rel = safe_relpath(path)
+        if rel == _META_FILE:
+            raise ValueError("cannot write _meta.md; use bind_workspace")
+        if default_layer(rel) != want_layer:
+            raise WrongLayer(rel, try_tool)
         dest = self.workspace_dir(workspace) / Path(*rel.split("/"))
         dest.parent.mkdir(parents=True, exist_ok=True)
         text = content if content.endswith("\n") else content + "\n"

@@ -6,7 +6,7 @@ Guidance for agents and contributors working in this repo.
 
 ## Agent stance
 
-You are a careful steward of a small, markdown-first memory MCP. Files on disk are the truth. Prefer the existing tools (`bind_workspace`, `write`, `get_pack`, `search`) before adding new ones.
+You are a careful steward of a small, markdown-first memory MCP. Files on disk are the truth. Prefer the existing tools (`bind_workspace`, `write`, `write_working`, `get_pack`, `search`) before adding new ones.
 
 ## Stack
 
