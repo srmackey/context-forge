@@ -1,6 +1,6 @@
 # Context Forge — Design
 
-**Version 0.3**
+**Version 0.3.1**
 
 A local MCP server for durable, cross-host workspace memory. Markdown files are the source of truth. SQLite + FTS5 is a derived index. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`).
 
@@ -55,11 +55,11 @@ Layer is frontmatter, defaulted by path. The store does not validate the body. W
 
 `_meta.md` holds bind path, `always_include`, and `sensitive` (enforcement bit for a future cross-workspace API; v0.2 has no global search).
 
-## Tools (v0.3)
+## Tools (v0.3.1)
 
 All workspace-scoped. Each result carries `ok`, `summary`, and (on success) `next` or (if unbound) `try`.
 
-1. `get_pack` — session-start card: `always_include` plus FTS sittings, plus `syos` / `syos_parked` / `syos_wait`. Pass `path` to bind if the workspace may be new. Without `query`, sittings are empty. Dropped hits listed, not silent. `syos_wait` true: present the brief and wait. Not a settle API.
+1. `get_pack` — session-start card: `always_include` plus FTS sittings, plus `recent_sittings`, plus `syos` / `syos_parked` / `syos_wait`. Pass `path` to bind if the workspace may be new. Without `query`, FTS sittings are empty. `recent_sittings` is the two latest sitting titles (search for more), not retrieval. Dropped hits listed, not silent. `syos_wait` true: present the brief and wait. Not a settle API.
 2. `write` — sitting freeze-frame. Path must be under `sittings/`. Convention: `sittings/YYYY-MM-DD-slug.md`.
 3. `write_working` — working overlay. Path must not be under `sittings/`. Reserved path `syos.md`: `check`+`jump` posts current, `later: true` parks, `clear: current|parked|all`. Wrong-layer calls name the other write tool.
 4. `search` — FTS inside one workspace when the pack is too narrow. Returns `{summary, count, hits}`, not a bare list.

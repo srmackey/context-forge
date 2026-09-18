@@ -161,10 +161,11 @@ def get_pack(
 
     Use at step-in or session start. Pass path to bind if the workspace may be new.
     Pass query for the sitting's goal. Dropped hits are listed, not silent.
-    Do not walk search for this view. Do not use to write.
+    Without query, sittings are empty. recent_sittings is the two latest titles
+    (search for more), not retrieval. Do not walk search for this view. Do not use to write.
 
-    Returns always_include, sittings, dropped, missing_include, syos, syos_parked,
-    syos_wait, plus summary. syos_wait true means present the brief and wait.
+    Returns always_include, sittings, dropped, missing_include, recent_sittings,
+    syos, syos_parked, syos_wait, plus summary. syos_wait true means present the brief and wait.
     Writes only if path is set and bind runs.
     """
     try:
@@ -172,9 +173,12 @@ def get_pack(
     except UnboundWorkspace as exc:
         return _unbound(exc.workspace)
     dropped = pack.get("dropped") or []
+    recents = pack.get("recent_sittings") or []
     n_inc = len(pack.get("always_include") or [])
     n_sit = len(pack.get("sittings") or [])
     summary = f"Pack for {pack['workspace']}: {n_inc} always_include, {n_sit} sittings."
+    if recents:
+        summary += f" {len(recents)} recent sittings (search for more)."
     if dropped:
         summary += f" {len(dropped)} dropped."
     if pack.get("syos_wait"):

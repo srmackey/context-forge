@@ -107,5 +107,41 @@ def test_bind_always_include_shows_in_pack_without_query(store, tmp_path, harbor
     assert meta["always_include"] == ["_status/now.md"]
     pack = store.get_pack(harbor, query=None)
     assert pack["sittings"] == []
+    assert pack["recent_sittings"] == []
     assert len(pack["always_include"]) == 1
     assert pack["always_include"][0]["path"] == "_status/now.md"
+
+
+def test_get_pack_bare_recent_sittings_titles_only(store, harbor):
+    store.write(harbor, "sittings/2026-09-16-alpha.md", "# Alpha hatch\n")
+    store.write(harbor, "sittings/2026-09-17-beta.md", "# Beta lantern\n")
+    store.write(harbor, "sittings/2026-09-18-gamma.md", "# Gamma quay\n")
+    pack = store.get_pack(harbor, query=None)
+    assert pack["sittings"] == []
+    assert [r["path"] for r in pack["recent_sittings"]] == [
+        "sittings/2026-09-18-gamma.md",
+        "sittings/2026-09-17-beta.md",
+    ]
+    assert [r["title"] for r in pack["recent_sittings"]] == ["Gamma quay", "Beta lantern"]
+    for row in pack["recent_sittings"]:
+        assert set(row) == {"path", "title"}
+
+
+def test_get_pack_query_sittings_unchanged_and_keeps_recents(store, harbor):
+    store.write(harbor, "sittings/2026-09-16-alpha.md", "# Alpha hatch\n")
+    store.write(harbor, "sittings/2026-09-18-gamma.md", "# Gamma quay\n")
+    pack = store.get_pack(harbor, query="hatch")
+    assert [s["path"] for s in pack["sittings"]] == ["sittings/2026-09-16-alpha.md"]
+    assert "content" in pack["sittings"][0]
+    assert [r["path"] for r in pack["recent_sittings"]] == [
+        "sittings/2026-09-18-gamma.md",
+        "sittings/2026-09-16-alpha.md",
+    ]
+
+
+def test_get_pack_recent_sittings_one_or_none(store, harbor):
+    empty = store.get_pack(harbor, query=None)
+    assert empty["recent_sittings"] == []
+    store.write(harbor, "sittings/2026-09-16-alpha.md", "# Alpha hatch\n")
+    pack = store.get_pack(harbor, query=None)
+    assert [r["path"] for r in pack["recent_sittings"]] == ["sittings/2026-09-16-alpha.md"]

@@ -1,7 +1,7 @@
 id: context-forge
 name: Context Forge
 kind: theme
-version: 0.4.0
+version: 0.4.1
 articles:
   - id: methodology/use-context-forge
     path: articles/methodology/use-context-forge.md
