@@ -39,7 +39,7 @@ This checkout may be cloned and pushed. Treat the tree, every commit, and any re
 - Stage paths by name. Do not add the whole working tree at once. Never `git add -A`.
 - Do not commit personal vault contents, real people's names, or another project's files.
 - Do not commit `.claude/`, `.cursor/`, or `.grok/`.
-- Local working files (`_status/`, `inbox/`, `_system/`, `project.yaml`, `PROTOCOL.md`) are gitignored.
+- Chair overlay is not in this tree. Do not Read `_status/`, `inbox/`, or `_system/` from the checkout. `project.yaml` and `PROTOCOL.md` are gitignored.
 - Enable the hygiene hook in a fresh clone: `git config core.hooksPath .githooks`. It also wants a `.git/hygiene-denylist`, one term per line, which is deliberately untracked.
 
 Attribution in LICENSE and commit authorship is the intended exception.

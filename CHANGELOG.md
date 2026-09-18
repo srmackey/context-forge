@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+
+- Public contract: this article is an overlay home. Overlay paths resolve in the store. Owner articles name the paths. Checkout absence is expected.
+
 ## 0.3.0
 
 - Session brief on the pack: reserved path `syos.md`. `get_pack` returns `syos`, `syos_parked`, and `syos_wait`.
