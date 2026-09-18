@@ -10,7 +10,7 @@ Context Forge is workspace memory: working files and sitting records. Markdown o
 
 ## When it fires
 
-- **Session start** in a folder this store should remember: `get_pack` for this workspace. Pass `path` if it may not be bound yet. That is the card. Do not walk `search` for this view. Without `query`, the card is `always_include` only (no sittings). The card always names `syos`, `syos_parked`, and `syos_wait` (empty when absent).
+- **Session start** in a folder this store should remember: `get_pack` for this workspace. Pass `path` if it may not be bound yet. That is the card. Do not walk `search` for this view. Without `query`, FTS sittings are empty. The card still names the two most recent sittings by date, titles only, as `recent_sittings` (search for more). The card always names `syos`, `syos_parked`, and `syos_wait` (empty when absent).
 - **A durable freeze-frame** for a successor in this workspace: `write` to `sittings/YYYY-MM-DD-slug.md`. Not every turn. Not a transcript. Not a wiki page.
 - **The set in play** (working overlay): `write_working`. Not a sitting. Not session start.
 - **A session brief** for the next sitting here: `write_working` to `syos.md`. Two beats: `check` and `jump`. If `syos_wait` is true on the pack, present the brief and wait. If only `syos_parked` is set, show it on the readout and do not freeze. `later: true` parks current. `clear: current|parked|all` clears. Act or skip clears that slot. Do not call a second tool.

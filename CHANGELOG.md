@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+- `get_pack` returns `recent_sittings`: the two most recent sitting titles and paths. FTS `sittings` stay empty without a query.
+- Public contract 0.4.1: the session-start card names that preview (search for more).
+
 ## 0.4.0
 
 - Public contract: this article is an overlay home. Overlay paths resolve in the store. Owner articles name the paths. Checkout absence is expected.

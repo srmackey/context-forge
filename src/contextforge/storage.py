@@ -262,11 +262,29 @@ class Storage:
             "missing_include": missing,
             "sittings": hits,
             "dropped": dropped,
+            "recent_sittings": self._recent_sittings(workspace),
             "sensitive": meta["sensitive"],
             "syos": syos["current"],
             "syos_parked": syos["parked"],
             "syos_wait": syos["current"] is not None,
         }
+
+    def _recent_sittings(self, workspace: str, limit: int = 2) -> list[dict[str, str]]:
+        sql = """
+            SELECT path, title
+            FROM documents
+            WHERE workspace = ? AND layer = 'sittings'
+            ORDER BY
+              CASE
+                WHEN path GLOB 'sittings/????-??-??-*' THEN substr(path, 10, 10)
+                ELSE coalesce(updated_at, '')
+              END DESC,
+              updated_at DESC,
+              path DESC
+            LIMIT ?
+        """
+        cur = self._db().execute(sql, (workspace, max(1, int(limit))))
+        return [{"path": row["path"], "title": row["title"]} for row in cur.fetchall()]
 
     def _syos_path(self, workspace: str) -> Path:
         return self.workspace_dir(workspace) / _SYOS_FILE

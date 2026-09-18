@@ -26,6 +26,7 @@ def test_get_pack_does_not_cross_workspaces(store, harbor, river):
     )
     pack = store.get_pack(river, query="quayside-lantern")
     assert pack["sittings"] == []
+    assert pack["recent_sittings"] == []
     assert pack["workspace"] == "river-ledger"
 
 
