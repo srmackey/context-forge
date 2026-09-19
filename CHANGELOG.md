@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.2
+
+- `get_pack` and `search` reindex the workspace from disk first. Files added or edited without a write tool are found; files deleted on disk drop out of results.
+- `get_pack` returns `reindexed` (files touched) and names it in the summary when nonzero.
+
 ## 0.3.1
 
 - `get_pack` returns `recent_sittings`: the two most recent sitting titles and paths. FTS `sittings` stay empty without a query.

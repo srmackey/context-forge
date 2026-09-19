@@ -199,6 +199,40 @@ class Storage:
             raise FileNotFoundError(rel)
         return self._document_from_file(workspace, rel, dest)
 
+    def reindex(self, workspace: str) -> int:
+        """Bring the index in line with the files on disk. Returns files touched.
+
+        Indexes files that are new or changed since they were last indexed, and
+        drops rows whose file is gone. Markdown wins; this is how it wins for a
+        file that arrived without going through a write.
+        """
+        root = self.workspace_dir(workspace)
+        cur = self._db().execute(
+            "SELECT path, updated_at FROM documents WHERE workspace = ?",
+            (workspace,),
+        )
+        indexed = {row["path"]: row["updated_at"] or "" for row in cur.fetchall()}
+        on_disk: set[str] = set()
+        touched = 0
+        for f in root.rglob("*.md"):
+            rel_parts = f.relative_to(root).parts
+            if any(p.startswith(".") for p in rel_parts) or not f.is_file():
+                continue
+            rel = "/".join(rel_parts)
+            on_disk.add(rel)
+            mtime = datetime.fromtimestamp(f.stat().st_mtime, timezone.utc).isoformat(
+                timespec="seconds"
+            )
+            if rel not in indexed or mtime > indexed[rel]:
+                self._index_file(workspace, rel)
+                touched += 1
+        for rel in indexed.keys() - on_disk:
+            self._unindex_file(workspace, rel)
+            touched += 1
+        if touched:
+            self._db().commit()
+        return touched
+
     def search(
         self,
         workspace: str,
@@ -207,6 +241,7 @@ class Storage:
         sittings_only: bool = False,
     ) -> list[dict[str, Any]]:
         self.read_meta(workspace)
+        self.reindex(workspace)
         q = query.strip()
         if not q:
             return []
@@ -236,6 +271,7 @@ class Storage:
             workspace = meta["workspace"]
         else:
             meta = self.read_meta(workspace)
+        reindexed = self.reindex(workspace)
         included: list[dict[str, Any]] = []
         missing: list[str] = []
         for rel in meta["always_include"]:
@@ -267,6 +303,7 @@ class Storage:
             "syos": syos["current"],
             "syos_parked": syos["parked"],
             "syos_wait": syos["current"] is not None,
+            "reindexed": reindexed,
         }
 
     def _recent_sittings(self, workspace: str, limit: int = 2) -> list[dict[str, str]]:
