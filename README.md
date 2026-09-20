@@ -42,4 +42,4 @@ A sitting record lives at `sittings/YYYY-MM-DD-slug.md`. Layer defaults from tha
 
 Fixtures use fictional workspaces only (`harbor-notes`, `river-ledger`). Do not point a test run at a real vault.
 
-Locked behavior: [`DESIGN.md`](DESIGN.md) (v0.3.1).
+Locked behavior: [`DESIGN.md`](DESIGN.md) (v0.3.2).

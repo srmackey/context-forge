@@ -165,7 +165,8 @@ def get_pack(
     (search for more), not retrieval. Do not walk search for this view. Do not use to write.
 
     Returns always_include, sittings, dropped, missing_include, recent_sittings,
-    syos, syos_parked, syos_wait, plus summary. syos_wait true means present the brief and wait.
+    syos, syos_parked, syos_wait, reindexed, plus summary. syos_wait true means present
+    the brief and wait. Files edited on disk are reindexed first (reindexed counts them).
     Writes only if path is set and bind runs.
     """
     try:
@@ -181,6 +182,8 @@ def get_pack(
         summary += f" {len(recents)} recent sittings (search for more)."
     if dropped:
         summary += f" {len(dropped)} dropped."
+    if pack.get("reindexed"):
+        summary += f" Reindexed {pack['reindexed']} file(s) changed on disk."
     if pack.get("syos_wait"):
         summary += " Syos present: present the brief and wait."
         nxt = "Syos is present. Present the brief and wait."
@@ -199,9 +202,10 @@ def get_pack(
 
 @mcp.tool
 def search(workspace: str, query: str, limit: int = 20) -> dict[str, Any]:
-    """FTS inside one workspace. Read. Does not write.
+    """FTS inside one workspace. Read. Does not write a document.
 
     Use when get_pack is too narrow or you need working files as well as sittings.
+    Files edited on disk are reindexed before the query.
     Do not use as session start; that is get_pack. There is no global search.
 
     Returns hits and count plus summary. If unbound, names bind_workspace.
