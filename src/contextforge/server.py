@@ -70,8 +70,22 @@ _setup_logging()
 mcp = FastMCP("ContextForge", instructions=INSTRUCTIONS)
 _storage = Storage()
 
+# Clients treat an unset hint as destructive and open to the network.
+_READ = {
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+}
+_WRITE = {
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+}
 
-@mcp.tool
+
+@mcp.tool(annotations=_WRITE)
 def bind_workspace(
     path: str,
     slug: str | None = None,
@@ -97,7 +111,7 @@ def bind_workspace(
     }
 
 
-@mcp.tool
+@mcp.tool(annotations=_WRITE)
 def write(workspace: str, path: str, content: str) -> dict[str, Any]:
     """Write a sitting freeze-frame. Writes.
 
@@ -123,7 +137,7 @@ def write(workspace: str, path: str, content: str) -> dict[str, Any]:
     }
 
 
-@mcp.tool
+@mcp.tool(annotations=_WRITE)
 def write_working(workspace: str, path: str, content: str) -> dict[str, Any]:
     """Write a working overlay file. Writes.
 
@@ -150,7 +164,7 @@ def write_working(workspace: str, path: str, content: str) -> dict[str, Any]:
     }
 
 
-@mcp.tool
+@mcp.tool(annotations=_WRITE)
 def get_pack(
     workspace: str,
     query: str | None = None,
@@ -200,7 +214,7 @@ def get_pack(
     }
 
 
-@mcp.tool
+@mcp.tool(annotations=_READ)
 def search(workspace: str, query: str, limit: int = 20) -> dict[str, Any]:
     """FTS inside one workspace. Read. Does not write a document.
 

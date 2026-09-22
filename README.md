@@ -18,7 +18,7 @@ Five tools. Each call names one workspace.
 | `search` | workspace, query, optional limit | Hits and a count | Reads one workspace. Reindexes files changed on disk. Does not write a document. |
 | `bind_workspace` | path, optional slug and always_include | Workspace meta | Writes the workspace record in the vault. Does not read that folder's files. |
 
-The server does not set `readOnlyHint`, `destructiveHint`, `idempotentHint`, or `openWorldHint`. The side-effects column is the behavior.
+Every tool sets `openWorldHint` false. `search` is read-only. The other four can write in the vault, and a second call with the same arguments does not add more damage. `get_pack` writes only when `path` is set and a bind runs.
 
 On initialize the server returns a short operating note (call `get_pack` at session start, use `write` for sittings and `write_working` for everything else). That note lives in the server. This page does not repeat it.
 
