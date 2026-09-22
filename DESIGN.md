@@ -53,9 +53,9 @@ Layer is frontmatter, defaulted by path. The store does not validate the body. W
         2026-09-16-first.md
 ```
 
-`_meta.md` holds bind path, `always_include`, and `sensitive` (enforcement bit for a future cross-workspace API; v0.2 has no global search).
+`_meta.md` holds bind path, `always_include`, and `sensitive` (an enforcement bit for a future cross-workspace API). The server has no global search.
 
-## Tools (v0.3.2)
+## Tools
 
 All workspace-scoped. Each result carries `ok`, `summary`, and (on success) `next` or (if unbound) `try`.
 
@@ -72,7 +72,7 @@ Call or miss it. Same reliability as any store that is queried rather than auto-
 - Markdown wins. `get_pack` and `search` bring the index in line with the files before they answer: a file added or edited on disk is indexed, and one deleted on disk drops out. `get_pack` reports how many it touched as `reindexed`.
 - No global FTS. A query in `river-ledger` cannot return `harbor-notes` documents.
 - Destructive path traversal is refused (`..`, absolute paths).
-- `sensitive: true` on `_meta.md` is reserved so a later cross-workspace API has something to refuse. v0.2 does not offer that API.
+- `sensitive: true` on `_meta.md` is reserved so a later cross-workspace API has something to refuse. The server does not offer that API.
 - Promote-to-wiki is not a Context Forge tool. If a sitting transcends the workspace, another product writes the capture; this store only holds a pointer.
 
 ## What it does not do

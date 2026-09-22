@@ -1,16 +1,78 @@
 # Context Forge
 
-A local MCP server for workspace memory. Markdown files are the source of truth. SQLite + FTS5 is a derived index. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`).
+Context Forge gives an AI client a local memory of one workspace: working files and sitting notes, stored as markdown.
 
-It holds working files (the set in play) and sittings (freeze-frames of a session that a successor in the same workspace would want). It is not a wiki, not standing guidance, and not a bulletin.
+Not for a wiki, standing guidance, or a bulletin. There is no search across workspaces.
 
-## Stack
+Markdown under `~/.contextforge/` is the source of truth (override with `CONTEXTFORGE_HOME`). SQLite + FTS5 is a derived index and can be rebuilt.
 
-- Python 3.11+, `uv`, FastMCP, Pydantic v2
-- Markdown + YAML frontmatter under `~/.contextforge/workspaces/<slug>/`
-- Tests with pytest under `tests/`
+## Capabilities
 
-## Setup
+Five tools. Each call names one workspace.
+
+| Tool | Inputs | Returns | Side effects |
+|---|---|---|---|
+| `get_pack` | workspace, optional query, limit, path | The session card: included files, recent sittings, and the session brief | Reads the vault. Reindexes files changed on disk. Binds the workspace when `path` is set. |
+| `write` | workspace, path, content | The written document | Writes a sitting. The path must be under `sittings/`. |
+| `write_working` | workspace, path, content | The written document | Writes a working file. The path must not be under `sittings/`. `syos.md` is the session brief. |
+| `search` | workspace, query, optional limit | Hits and a count | Reads one workspace. Reindexes files changed on disk. Does not write a document. |
+| `bind_workspace` | path, optional slug and always_include | Workspace meta | Writes the workspace record in the vault. Does not read that folder's files. |
+
+The server does not set `readOnlyHint`, `destructiveHint`, `idempotentHint`, or `openWorldHint`. The side-effects column is the behavior.
+
+On initialize the server returns a short operating note (call `get_pack` at session start, use `write` for sittings and `write_working` for everything else). That note lives in the server. This page does not repeat it.
+
+How the pieces fit together is in [DESIGN.md](DESIGN.md).
+
+## Requirements
+
+- Python 3.11+
+- [uv](https://docs.astral.sh/uv/)
+- FastMCP 2, over stdio
+
+## Configure a client
+
+The same process, three hosts that this repo is launched from. Replace the directory with your checkout. Set `CONTEXTFORGE_HOME` when the vault should not be `~/.contextforge`.
+
+### Cursor and Claude Code
+
+Cursor reads `~/.cursor/mcp.json` or a project `.cursor/mcp.json`. Claude Code reads `~/.claude.json` or a project `.mcp.json`.
+
+```json
+{
+  "mcpServers": {
+    "contextforge": {
+      "command": "uv",
+      "args": ["run", "--directory", "/path/to/context-forge", "contextforge"]
+    }
+  }
+}
+```
+
+### Grok
+
+`~/.grok/config.toml`:
+
+```toml
+[mcp_servers.contextforge]
+command = "uv"
+args = ["run", "--directory", "/path/to/context-forge", "contextforge"]
+```
+
+File paths and the host seed that tells an agent when to call the tools: [install/mcp.json.examples.md](install/mcp.json.examples.md) and [install/README.md](install/README.md).
+
+## Trust boundary
+
+- Transport is stdio. The host starts a local process as the user who launched it.
+- The process reads and writes only under the vault (`CONTEXTFORGE_HOME`, or `~/.contextforge`).
+- Binding a workspace stores that folder's path. The server does not read or write the folder's files.
+- It does not use the network and it does not take a credential.
+- It does write markdown and a derived SQLite index inside the vault.
+- A path that escapes the workspace is refused.
+
+The same boundary, and how to report a vulnerability, is in [SECURITY.md](SECURITY.md).
+
+## Develop from source
 
 ```bash
 uv sync
@@ -18,28 +80,14 @@ uv run pytest
 uv run contextforge
 ```
 
-| Variable | Role |
-|---|---|
-| `CONTEXTFORGE_HOME` | Vault root (default `~/.contextforge`; or pass `--vault`) |
+Tests use fictional workspaces (`harbor-notes`, `river-ledger`). Do not point a run at a real vault.
 
-MCP host snippets: [`install/mcp.json.examples.md`](install/mcp.json.examples.md). Global host seed (so a new agent knows the tools exist): [`install/README.md`](install/README.md).
+There is no published package yet. Install by cloning and running from the checkout, as above.
 
-## Tools
+## Versioning
 
-Every tool is workspace-scoped. Bind first, or miss it.
+A tool add, remove, or rename updates the capabilities table and [CHANGELOG.md](CHANGELOG.md) in the same change. The package version is in `pyproject.toml`.
 
-| Tool | Job |
-|---|---|
-| `get_pack` | Session-start card. Pass `path` to bind if needed. Includes `recent_sittings`, `syos`, `syos_parked`, `syos_wait`. |
-| `write` | Sitting freeze-frame under `sittings/`. |
-| `write_working` | Working overlay. Not under `sittings/`. `syos.md` is the session brief. |
-| `search` | FTS inside one workspace when the pack is too narrow. |
-| `bind_workspace` | Bind a folder only. Optional `always_include`. Skip if `get_pack` already has `path`. |
+## License
 
-A sitting record lives at `sittings/YYYY-MM-DD-slug.md`. Layer defaults from that path.
-
-## Tests
-
-Fixtures use fictional workspaces only (`harbor-notes`, `river-ledger`). Do not point a test run at a real vault.
-
-Locked behavior: [`DESIGN.md`](DESIGN.md) (v0.3.2).
+MIT. See [LICENSE](LICENSE).

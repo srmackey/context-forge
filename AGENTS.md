@@ -41,6 +41,7 @@ This checkout may be cloned and pushed. Treat the tree, every commit, and any re
 - Do not commit `.claude/`, `.cursor/`, or `.grok/`.
 - Chair overlay is not in this tree. Do not Read `_status/`, `inbox/`, or `_system/` from the checkout. `project.yaml` and `PROTOCOL.md` are gitignored.
 - Enable the hygiene hook in a fresh clone: `git config core.hooksPath .githooks`. It also wants a `.git/hygiene-denylist`, one term per line, which is deliberately untracked.
+- The README's first sentence is the GitHub description. A tool add, remove, or rename updates the capabilities table and `CHANGELOG.md` together. Vulnerability reports go to `SECURITY.md`, not a public issue.
 
 Attribution in LICENSE and commit authorship is the intended exception.
 

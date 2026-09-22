@@ -42,20 +42,10 @@ Replace the repo path with your checkout.
 }
 ```
 
-## Grok
+## Grok (`~/.grok/config.toml`)
 
-```json
-{
-  "mcpServers": {
-    "contextforge": {
-      "command": "uv",
-      "args": [
-        "run",
-        "--directory",
-        "/path/to/context-forge",
-        "contextforge"
-      ]
-    }
-  }
-}
+```toml
+[mcp_servers.contextforge]
+command = "uv"
+args = ["run", "--directory", "/path/to/context-forge", "contextforge"]
 ```
