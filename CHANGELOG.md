@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Security policy: how to report a vulnerability, and what the local process can touch.
+- README states the tools, the trust boundary, and how to launch the server on the hosts this repo is run from.
+
 ## 0.3.2
 
 - `get_pack` and `search` reindex the workspace from disk first. Files added or edited without a write tool are found; files deleted on disk drop out of results.

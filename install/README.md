@@ -12,6 +12,6 @@ Copy or symlink:
 - `routers/claude.md` → `~/.claude/rules/contextforge-router.md`
 - `routers/grok.md` → `~/.grok/rules/contextforge-router.md`
 
-**MCP json** (`mcp.json.examples.md`). Tells the host to spawn the server process. Without this, the tools are missing. Without the seed, a connected server still goes unused.
+**Host config** (`mcp.json.examples.md`). Tells the host to spawn the server process. Cursor and Claude Code use JSON. Grok uses TOML. Without this, the tools are missing. Without the seed, a connected server still goes unused.
 
 **Public contract** is `articles/methodology/use-context-forge.md`, listed from `provisions/pack.yaml`. Harvest onto Insitu is a later install step. The host seed does not wait on that.
