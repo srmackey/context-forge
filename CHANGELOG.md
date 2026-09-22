@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Each tool sets read-only, destructive, idempotent, and open-world hints. None are open to the network. `search` is the read-only tool. `get_pack` is marked as a write because `path` can bind a workspace.
+
 ### Added
 
 - Security policy: how to report a vulnerability, and what the local process can touch.
