@@ -7,7 +7,7 @@ Report a vulnerability privately with a GitHub Security Advisory on this reposit
 ## Trust boundary
 
 - Transport is stdio. The host starts a local process as the user who launched it.
-- The process reads and writes only under the vault: `CONTEXTFORGE_HOME`, or `~/.contextforge` when that is unset.
+- Without `CONTEXTFORGE_ROOT`, the process reads and writes only under the vault: `CONTEXTFORGE_HOME`, or `~/.contextforge` when that is unset. With that root set, it reads and writes `_contextforge/` under each nexus folder in the install.
 - Binding a workspace stores that folder's path. The server does not read or write the folder's files.
 - It does not use the network and it does not take a credential.
 - It does write markdown and a derived SQLite index inside the vault.

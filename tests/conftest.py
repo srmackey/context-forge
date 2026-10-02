@@ -7,6 +7,12 @@ import pytest
 from contextforge.storage import Storage
 
 
+@pytest.fixture(autouse=True)
+def _no_install_root(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Address mode is opt-in. A machine CONTEXTFORGE_ROOT must not leak into tests."""
+    monkeypatch.delenv("CONTEXTFORGE_ROOT", raising=False)
+
+
 @pytest.fixture
 def home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     vault = tmp_path / "vault"

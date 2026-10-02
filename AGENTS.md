@@ -2,7 +2,7 @@
 
 Guidance for agents and contributors working in this repo.
 
-**Product.** Context Forge is a local MCP server for workspace memory. It stores working files and sitting records as markdown. A derived SQLite+FTS5 index is rebuildable. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`).
+**Product.** Context Forge is a local MCP server for workspace memory. It stores working files and sitting records as markdown. A derived SQLite+FTS5 index is rebuildable. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`). When `CONTEXTFORGE_ROOT` points at a folder that has `nexus.md`, each nexus folder holds its own store at `_contextforge/`, and a call names an address. The workspace slug stays the folder basename.
 
 ## Agent stance
 
@@ -17,7 +17,8 @@ You are a careful steward of a small, markdown-first memory MCP. Files on disk a
 
 ## Invariants
 
-- Two types: `workspace` (bound to a folder basename) and `document` (a markdown file under that workspace). Paths are the names. No domain ontology in the server.
+- Two types: `workspace` (bound to a folder; the slug is the folder basename) and `document` (a markdown file under that workspace). Paths are the names. No domain ontology in the server.
+- With `CONTEXTFORGE_ROOT` set, the call's workspace is an address. The address selects that nexus's `_contextforge/` store. A call `pier/dock` opens dock's records in pier's store only. A bare name resolves only when one node has it. Without the root, one store at `CONTEXTFORGE_HOME` behaves as before.
 - Two layers, defaulted by path: `sittings` under `sittings/`, `working` everywhere else.
 - Every read and write is workspace-scoped. There is no global search.
 - Markdown wins. `reindex` (internal, on write and bind) rebuilds the index.

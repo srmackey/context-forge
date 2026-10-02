@@ -12,14 +12,21 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--vault",
         default=None,
-        help="Vault root. Or set CONTEXTFORGE_HOME. Default ~/.contextforge.",
+        help="Single store. Or set CONTEXTFORGE_HOME. Default ~/.contextforge. Ignored when --root is set.",
+    )
+    parser.add_argument(
+        "--root",
+        default=None,
+        help="Install root that holds nexus.md. Or set CONTEXTFORGE_ROOT. Each nexus folder then holds _contextforge/.",
     )
     return parser
 
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
-    if args.vault:
+    if args.root:
+        os.environ["CONTEXTFORGE_ROOT"] = args.root
+    elif args.vault:
         os.environ["CONTEXTFORGE_HOME"] = args.vault
     from contextforge.server import main as run
 

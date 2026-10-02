@@ -1,6 +1,6 @@
 # Context Forge
 
-Context Forge is a local MCP for workspace memory: working files and sitting records. Markdown under `~/.contextforge/` (override `CONTEXTFORGE_HOME`). Not a wiki, not standing guidance, not a bulletin.
+Context Forge is a local MCP for workspace memory: working files and sitting records. Markdown under `~/.contextforge/` (override `CONTEXTFORGE_HOME`). When `CONTEXTFORGE_ROOT` points at a folder with `nexus.md`, each nexus folder holds `_contextforge/` and a call names an address; the workspace slug stays the folder basename. Not a wiki, not standing guidance, not a bulletin.
 
 Tools (workspace-scoped, no global search): `get_pack`, `write`, `write_working`, `search`, `bind_workspace`.
 
