@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `CONTEXTFORGE_ROOT` (or `--root`). When that folder has `nexus.md`, each nexus keeps a store at `_contextforge/`. A call names an address. The workspace slug stays the folder basename. A bare name resolves only when it is unique. Without the root, `~/.contextforge` / `CONTEXTFORGE_HOME` is unchanged.
+
 ### Changed
 
 - Each tool sets read-only, destructive, idempotent, and open-world hints. None are open to the network. `search` is the read-only tool. `get_pack` is marked as a write because `path` can bind a workspace.

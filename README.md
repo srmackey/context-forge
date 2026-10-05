@@ -6,6 +6,8 @@ Not for a wiki, standing guidance, or a bulletin. There is no search across work
 
 Markdown under `~/.contextforge/` is the source of truth (override with `CONTEXTFORGE_HOME`). SQLite + FTS5 is a derived index and can be rebuilt.
 
+Set `CONTEXTFORGE_ROOT` to an install that has `nexus.md` when each nexus should keep its own store at `<nexus>/_contextforge/`. A call then names an address (`pier/dock`). The workspace slug stays the folder basename. Without that root, the single store above is the whole product.
+
 ## Capabilities
 
 Five tools. Each call names one workspace.
@@ -64,7 +66,7 @@ File paths and the host seed that tells an agent when to call the tools: [instal
 ## Trust boundary
 
 - Transport is stdio. The host starts a local process as the user who launched it.
-- The process reads and writes only under the vault (`CONTEXTFORGE_HOME`, or `~/.contextforge`).
+- Without `CONTEXTFORGE_ROOT`, the process reads and writes only under the vault (`CONTEXTFORGE_HOME`, or `~/.contextforge`). With that root set, it reads and writes `_contextforge/` under each nexus folder in the install.
 - Binding a workspace stores that folder's path. The server does not read or write the folder's files.
 - It does not use the network and it does not take a credential.
 - It does write markdown and a derived SQLite index inside the vault.

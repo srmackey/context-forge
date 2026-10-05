@@ -8,7 +8,8 @@ from typing import Any
 
 from fastmcp import FastMCP
 
-from .storage import Storage, UnboundWorkspace, WrongLayer
+from .homes import Homes, UnknownAddress, load_homes, same_chair
+from .storage import UnboundWorkspace, WrongLayer
 
 INSTRUCTIONS = """\
 Context Forge: local workspace memory.
@@ -16,8 +17,13 @@ Context Forge: local workspace memory.
 Types: workspace (bound folder) and document (markdown path under it).
 Layers: sittings (under sittings/) and working (everything else).
 
-Data lives under ~/.contextforge/ (override with CONTEXTFORGE_HOME). Markdown
-is the source of truth; SQLite+FTS5 is derived. There is no global search.
+With CONTEXTFORGE_ROOT set to an install that has nexus.md, every call's
+workspace is an address. The address selects that nexus's store at
+_contextforge/ under the nexus folder. The workspace slug stays the folder
+basename. A call addressed nexus/node opens that node's records in that
+nexus's store only. Without that root, data lives under ~/.contextforge/
+(override with CONTEXTFORGE_HOME). Markdown is the source of truth;
+SQLite+FTS5 is derived. There is no global search.
 
 Session start: get_pack for this workspace. Pass path if it may not be bound yet.
 That card binds if needed. Do not walk search for the common sitting view.
@@ -68,7 +74,31 @@ def _write_fail(workspace: str, path: str, exc: Exception) -> dict[str, Any]:
 
 _setup_logging()
 mcp = FastMCP("ContextForge", instructions=INSTRUCTIONS)
-_storage = Storage()
+_homes: Homes | None = None
+
+
+def _homes_get() -> Homes:
+    global _homes
+    if _homes is None:
+        _homes = load_homes()
+    return _homes
+
+
+def _select(workspace: str):
+    homes = _homes_get()
+    if homes.registry is None:
+        return homes.fallback(), workspace, None
+    store, located = homes.open_address(workspace)
+    return store, located.slug, located.address
+
+
+def _unknown(address: str) -> dict[str, Any]:
+    return {
+        "ok": False,
+        "error": "unknown_address",
+        "summary": f"Unknown address {address!r}.",
+        "workspace": address,
+    }
 
 # Clients treat an unset hint as destructive and open to the network.
 _READ = {
@@ -101,11 +131,41 @@ def bind_workspace(
 
     Returns the workspace meta (slug, bind, always_include, sensitive) plus summary.
     """
-    meta = _storage.bind_workspace(path, slug, always_include=always_include)
+    homes = _homes_get()
+    try:
+        if homes.registry is None:
+            meta = homes.fallback().bind_workspace(
+                path, slug, always_include=always_include
+            )
+        else:
+            store, located = homes.open_path(path)
+            if slug and not same_chair(slug, located):
+                return {
+                    "ok": False,
+                    "error": "address_mismatch",
+                    "summary": (
+                        f"{slug!r} is not the address of {path!r} "
+                        f"({located.address})."
+                    ),
+                    "workspace": slug,
+                    "address": located.address,
+                }
+            meta = store.bind_workspace(
+                path,
+                located.slug,
+                always_include=always_include,
+                sensitive=located.sensitive,
+            )
+            meta["address"] = located.address
+    except UnknownAddress:
+        return _unknown(path)
     ws = meta["workspace"]
+    summary = f"Bound {ws}. sensitive={meta['sensitive']}."
+    if meta.get("address"):
+        summary = f"Bound {meta['address']} ({ws}). sensitive={meta['sensitive']}."
     return {
         "ok": True,
-        "summary": f"Bound {ws}. sensitive={meta['sensitive']}.",
+        "summary": summary,
         "next": "Call get_pack for this sitting.",
         **meta,
     }
@@ -124,14 +184,19 @@ def write(workspace: str, path: str, content: str) -> dict[str, Any]:
     Returns the written document (path, layer, title) plus summary.
     """
     try:
-        doc = _storage.write(workspace, path, content)
+        store, slug, address = _select(workspace)
+        doc = store.write(slug, path, content)
+    except UnknownAddress:
+        return _unknown(workspace)
     except UnboundWorkspace as exc:
         return _unbound(exc.workspace)
     except (WrongLayer, ValueError) as exc:
         return _write_fail(workspace, path, exc)
+    if address:
+        doc["address"] = address
     return {
         "ok": True,
-        "summary": f"Wrote {doc['path']} ({doc['layer']}) in {workspace}.",
+        "summary": f"Wrote {doc['path']} ({doc['layer']}) in {address or workspace}.",
         "next": "Call get_pack if a successor needs this in view. Do not write a wiki from this tool.",
         **doc,
     }
@@ -151,14 +216,19 @@ def write_working(workspace: str, path: str, content: str) -> dict[str, Any]:
     Returns the written document (path, layer, title) plus summary.
     """
     try:
-        doc = _storage.write_working(workspace, path, content)
+        store, slug, address = _select(workspace)
+        doc = store.write_working(slug, path, content)
+    except UnknownAddress:
+        return _unknown(workspace)
     except UnboundWorkspace as exc:
         return _unbound(exc.workspace)
     except (WrongLayer, ValueError) as exc:
         return _write_fail(workspace, path, exc)
+    if address:
+        doc["address"] = address
     return {
         "ok": True,
-        "summary": f"Wrote {doc['path']} ({doc['layer']}) in {workspace}.",
+        "summary": f"Wrote {doc['path']} ({doc['layer']}) in {address or workspace}.",
         "next": "Call get_pack if a successor needs this in view.",
         **doc,
     }
@@ -184,7 +254,30 @@ def get_pack(
     Writes only if path is set and bind runs.
     """
     try:
-        pack = _storage.get_pack(workspace, query=query, limit=limit, path=path)
+        homes = _homes_get()
+        if homes.registry is not None and path:
+            store, located = homes.open_path(path)
+            if not same_chair(workspace, located):
+                return {
+                    "ok": False,
+                    "error": "address_mismatch",
+                    "summary": (
+                        f"{workspace!r} is not the address of {path!r} "
+                        f"({located.address})."
+                    ),
+                    "workspace": workspace,
+                    "address": located.address,
+                }
+            store.bind_workspace(path, located.slug, sensitive=located.sensitive)
+            pack = store.get_pack(located.slug, query=query, limit=limit)
+            pack["address"] = located.address
+        else:
+            store, slug, address = _select(workspace)
+            pack = store.get_pack(slug, query=query, limit=limit, path=path)
+            if address:
+                pack["address"] = address
+    except UnknownAddress:
+        return _unknown(path or workspace)
     except UnboundWorkspace as exc:
         return _unbound(exc.workspace)
     dropped = pack.get("dropped") or []
@@ -225,7 +318,10 @@ def search(workspace: str, query: str, limit: int = 20) -> dict[str, Any]:
     Returns hits and count plus summary. If unbound, names bind_workspace.
     """
     try:
-        hits = _storage.search(workspace, query, limit=limit)
+        store, slug, address = _select(workspace)
+        hits = store.search(slug, query, limit=limit)
+    except UnknownAddress:
+        return _unknown(workspace)
     except UnboundWorkspace as exc:
         return _unbound(exc.workspace)
     n = len(hits)
@@ -234,17 +330,21 @@ def search(workspace: str, query: str, limit: int = 20) -> dict[str, Any]:
         if n
         else f"No hits in {workspace} for {query!r}."
     )
-    return {
+    out = {
         "ok": True,
         "summary": summary,
         "workspace": workspace,
         "count": n,
         "hits": hits,
     }
+    if address:
+        out["address"] = address
+    return out
 
 
 def _shutdown() -> None:
-    _storage.close()
+    if _homes is not None:
+        _homes.close()
 
 
 atexit.register(_shutdown)

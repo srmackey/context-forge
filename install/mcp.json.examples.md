@@ -2,6 +2,8 @@
 
 Context Forge is one process and one vault. Set the vault with `CONTEXTFORGE_HOME`, or pass `--vault`. If neither is set, the server uses `~/.contextforge`.
 
+Set `CONTEXTFORGE_ROOT` to an install that has `nexus.md` when each nexus should keep `_contextforge/` under its own folder. The workspace argument is then an address. Leave it unset to keep the single vault above. `--root` sets the same variable and wins over `--vault`.
+
 This file starts the server. The global host seed (`install/routers/`) is what tells a new agent the tools exist. See `install/README.md`.
 
 Replace the repo path with your checkout.

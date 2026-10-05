@@ -2,7 +2,7 @@
 
 **Version 0.3.2**
 
-A local MCP server for durable, cross-host workspace memory. Markdown files are the source of truth. SQLite + FTS5 is a derived index. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`).
+A local MCP server for durable, cross-host workspace memory. Markdown files are the source of truth. SQLite + FTS5 is a derived index. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`). When `CONTEXTFORGE_ROOT` points at a folder that has `nexus.md`, each nexus folder holds `_contextforge/` and a call names an address. The workspace slug stays the folder basename.
 
 This file is the public picture of how the system is structured. Install steps are in [README.md](README.md). What moved between versions is in [CHANGELOG.md](CHANGELOG.md). Contributor rules are in [AGENTS.md](AGENTS.md).
 
@@ -20,7 +20,7 @@ Two types. No domain ontology in the server.
 
 | Type | Role |
 |---|---|
-| **workspace** | Bound to a working folder. Slug is the folder basename unless bind names one. |
+| **workspace** | Bound to a working folder. Slug is the folder basename unless bind names one. With `CONTEXTFORGE_ROOT` set, the call names the address and the slug on disk stays the basename. A success result then includes `address`. |
 | **document** | A markdown file under that workspace. Path is the name. |
 
 Refs are the path under the workspace: `workspace:harbor-notes/sittings/2026-09-16-first`.
@@ -55,6 +55,8 @@ Layer is frontmatter, defaulted by path. The store does not validate the body. W
 
 `_meta.md` holds bind path, `always_include`, and `sensitive` (an enforcement bit for a future cross-workspace API). The server has no global search.
 
+With `CONTEXTFORGE_ROOT` set, the same layout lives at `<nexus>/_contextforge/`. A call `pier/dock` reads and writes `pier/_contextforge/workspaces/dock/` and does not open another nexus's store. A bare name resolves only when one node has it.
+
 ## Tools
 
 All workspace-scoped. Each result carries `ok`, `summary`, and (on success) `next` or (if unbound) `try`.
@@ -85,4 +87,4 @@ Call or miss it. Same reliability as any store that is queried rather than auto-
 
 ## Runtime vs this repo
 
-The product store is `~/.contextforge/`. This git repo is the server, the tests, and the contributor docs. Do not treat the checkout as the vault.
+Without `CONTEXTFORGE_ROOT`, the product store is `~/.contextforge/`. With it, each nexus folder under that root holds `_contextforge/`. This git repo is the server, the tests, and the contributor docs. Do not treat the checkout as the vault.

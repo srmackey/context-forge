@@ -135,6 +135,7 @@ class Storage:
         path: str,
         slug: str | None = None,
         always_include: list[str] | None = None,
+        sensitive: bool | None = None,
     ) -> dict[str, Any]:
         bind_path = str(Path(path).expanduser())
         workspace = (slug or Path(bind_path).name).strip()
@@ -156,6 +157,8 @@ class Storage:
             post["sensitive"] = False
         if always_include is not None:
             post["always_include"] = [safe_relpath(p) for p in always_include]
+        if sensitive is not None:
+            post["sensitive"] = bool(sensitive)
         meta_path.write_text(frontmatter.dumps(post) + "\n", encoding="utf-8")
         self._index_file(workspace, _META_FILE)
         self._db().commit()
