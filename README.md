@@ -34,34 +34,14 @@ How the pieces fit together is in [DESIGN.md](DESIGN.md).
 
 ## Configure a client
 
-The same process, three hosts that this repo is launched from. Replace the directory with your checkout. Set `CONTEXTFORGE_HOME` when the vault should not be `~/.contextforge`.
+The procedure is [install/README.md](install/README.md). The block is [install/mcp.json.examples.md](install/mcp.json.examples.md). Host files come from `platforms.yaml` next to `nexus.md`. With no environment file, user-global host config is left alone, and no project instruction file is written.
 
-### Cursor and Claude Code
-
-Cursor reads `~/.cursor/mcp.json` or a project `.cursor/mcp.json`. Claude Code reads `~/.claude.json` or a project `.mcp.json`.
-
-```json
-{
-  "mcpServers": {
-    "contextforge": {
-      "command": "uv",
-      "args": ["run", "--directory", "/path/to/context-forge", "contextforge"]
-    }
-  }
-}
+```yaml
+command: uv
+args: ["run", "--directory", "/path/to/context-forge", "contextforge"]
 ```
 
-### Grok
-
-`~/.grok/config.toml`:
-
-```toml
-[mcp_servers.contextforge]
-command = "uv"
-args = ["run", "--directory", "/path/to/context-forge", "contextforge"]
-```
-
-File paths and the host seed that tells an agent when to call the tools: [install/mcp.json.examples.md](install/mcp.json.examples.md) and [install/README.md](install/README.md).
+Set `CONTEXTFORGE_HOME` when the vault should not be `~/.contextforge`.
 
 ## Trust boundary
 
