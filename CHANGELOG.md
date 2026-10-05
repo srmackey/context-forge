@@ -9,6 +9,7 @@
 ### Changed
 
 - **Install reads `platforms.yaml`.** The procedure is `install/README.md`. One server block is upserted into each enabled host. The host file, the format, and the key come from the stored definition. With no environment file, user-global host config is not edited, and no project instruction file is written.
+- **Add, remove, and a moved checkout use that same pass.** Add puts the name on `enabled` and runs the pass for each installed public product. Remove lists this product's key and router and writes nothing on the dry run. The real remove deletes only those. A moved checkout runs the pass again with the current path.
 - Each tool sets read-only, destructive, idempotent, and open-world hints. None are open to the network. `search` is the read-only tool. `get_pack` is marked as a write because `path` can bind a workspace.
 
 ### Added
