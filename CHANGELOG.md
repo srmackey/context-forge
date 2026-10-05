@@ -8,6 +8,7 @@
 
 ### Changed
 
+- **Install reads `platforms.yaml`.** The procedure is `install/README.md`. One server block is upserted into each enabled host. The host file, the format, and the key come from the stored definition. With no environment file, user-global host config is not edited, and no project instruction file is written.
 - Each tool sets read-only, destructive, idempotent, and open-world hints. None are open to the network. `search` is the read-only tool. `get_pack` is marked as a write because `path` can bind a workspace.
 
 ### Added
