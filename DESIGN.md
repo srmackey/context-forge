@@ -1,6 +1,6 @@
 # Context Forge — Design
 
-**Version 0.3.2**
+**Version 0.4.0**
 
 A local MCP server for durable, cross-host workspace memory. Markdown files are the source of truth. SQLite + FTS5 is a derived index. The store lives under `~/.contextforge/` (override with `CONTEXTFORGE_HOME`). When `CONTEXTFORGE_ROOT` points at a folder that has `nexus.md`, each nexus folder holds `_contextforge/` and a call names an address. The workspace slug stays the folder basename.
 
