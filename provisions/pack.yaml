@@ -4,4 +4,4 @@ kind: theme
 version: 0.4.1
 articles:
   - id: methodology/use-context-forge
-    path: articles/methodology/use-context-forge.md
+    path: provisions/articles/methodology/use-context-forge.md

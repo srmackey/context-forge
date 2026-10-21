@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- The public contract lives under `provisions/articles/`. `provisions/pack.yaml` points at that file. The shelf copy is unchanged.
+
 ## 0.4.0
 
 ### Added

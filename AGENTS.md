@@ -54,5 +54,5 @@ Attribution in LICENSE and commit authorship is the intended exception.
 | `src/contextforge/` | Server package |
 | `tests/` | pytest |
 | `install/` | Install procedure, server block, and host-seed routers |
-| `articles/` | Public contract source |
-| `provisions/pack.yaml` | Extract list for that contract |
+| `provisions/articles/` | Public contract source |
+| `provisions/pack.yaml` | Extract list for that contract. The path points at that file. |
