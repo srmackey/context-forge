@@ -1,5 +1,43 @@
 # Context Forge
 
+Context Forge gives every AI project a local memory of its sessions, so the next session, in any AI client, picks up where the last one left off.
+
+## The problem
+
+AI clients don't share sessions. A new sitting loads your instructions, not last Tuesday. So every session starts by re-explaining where things stand, and whatever the last one figured out is gone unless you saved it somewhere by hand. Switch clients and it's worse: each one remembers only itself, if it remembers at all.
+
+## What you get
+
+- **A session card at the start.** One call returns what the project always wants loaded, the latest sittings, and any brief the last session left for this one.
+- **Two kinds of memory.** Working files hold the current state and are replaced in place. Sittings are dated records of each session that pile up as history.
+- **A note to your next self.** A session can leave a brief for the next one, or park it for later. When it says to wait, the next session presents the brief before doing anything else.
+- **Every AI client, one memory.** The store lives on your machine, not in any client, so a sitting written in one client is waiting in the next.
+- **Walls between projects.** Search never crosses projects. A query in one project can't return another project's notes.
+- **Plain files you own.** Everything is markdown you can open, edit, or version. The search index rebuilds itself from those files.
+
+## A day with it
+
+A made-up project, `harbor-notes`.
+
+Monday's session ends with the agent writing a sitting: what changed, what's half done, what to check next. It also updates the working file that says where the project stands.
+
+Tuesday you open a different AI client. Its first call fetches the session card, so it starts with Monday's state and the two most recent sittings already in view. You ask what was decided about the export format three weeks ago. That's older than the card shows, so the agent searches this project's sittings and finds it.
+
+Before you stop, you ask the agent to leave a brief for tomorrow and mark it to wait. Wednesday's session presents that brief first, before anything else.
+
+Nothing was captured behind your back. Every record exists because a session chose to write it.
+
+## Part of Domain Prime
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/domain-prime-dark.svg">
+  <img alt="Where Context Forge sits in the Domain Prime tree: every chair keeps its own memory." src="docs/domain-prime-light.svg" width="760">
+</picture>
+
+Context Forge is one of four engines in [Domain Prime](https://github.com/srmackey/domainprime), a local-first system for running many AI projects as a tree. Every chair keeps its own memory, stored inside its own line of work, and never searched from outside it. It also runs on its own: without a tree, one store under your home folder holds every project's memory. Terms like chair, nexus, and sitting are defined in the [glossary](https://github.com/srmackey/domainprime/blob/main/docs/glossary.md).
+
+## How it works
+
 Context Forge gives an AI client a local memory of one workspace: working files and sitting notes, stored as markdown.
 
 Not for a wiki, standing guidance, or a bulletin. There is no search across workspaces.

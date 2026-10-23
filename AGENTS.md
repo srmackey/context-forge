@@ -27,10 +27,11 @@ You are a careful steward of a small, markdown-first memory MCP. Files on disk a
 
 ## Privacy
 
-This repo ships no real personal data and no real project names.
+This repo ships no real personal data and no project names from a real install.
 
 - Docs, comments, examples, and tests use fictional workspace vocabulary (`harbor-notes`, `river-ledger`).
-- Do not commit a real vault's contents, filesystem paths, or project names.
+- Do not commit a real vault's contents, filesystem paths, or the names of a real install's projects.
+- Context Forge is part of Domain Prime. Naming and linking the other Domain Prime repos (domainprime, insitu, envoy, brain-forge) is fine. Names from a real install that runs them are not.
 - Write grain (what may go in a file) belongs to the bound workspace's owner, not this server.
 
 ## Public repo
