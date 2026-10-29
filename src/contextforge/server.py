@@ -207,9 +207,12 @@ def write_working(workspace: str, path: str, content: str) -> dict[str, Any]:
     """Write a working overlay file. Writes.
 
     Use to update the set in play (working layer). Path must not be under sittings/.
-    Reserved path syos.md is the session brief: check+jump posts current,
-    later: true parks it, clear: current|parked|all. Do not use for sitting
-    freeze-frames; that is write. Do not use as session start; that is get_pack.
+    Reserved path syos.md is the session brief. Its fields are YAML frontmatter
+    inside content, not arguments. "---\\ncheck: ...\\njump: ...\\n---" posts the
+    current brief, "---\\nlater: true\\n---" parks it, and
+    "---\\nclear: current|parked|all\\n---" clears. Plain check: lines without
+    the --- fences are refused. Do not use for sitting freeze-frames; that is
+    write. Do not use as session start; that is get_pack.
     Not a settle or status API. Do not write _meta.md; that is bind_workspace.
     If the workspace is not bound, the result names bind_workspace.
 

@@ -13,7 +13,16 @@ Context Forge is workspace memory: working files and sitting records. Markdown o
 - **Session start** in a folder this store should remember: `get_pack` for this workspace. Pass `path` if it may not be bound yet. That is the card. Do not walk `search` for this view. Without `query`, FTS sittings are empty. The card still names the two most recent sittings by date, titles only, as `recent_sittings` (search for more). The card always names `syos`, `syos_parked`, and `syos_wait` (empty when absent).
 - **A durable freeze-frame** for a successor in this workspace: `write` to `sittings/YYYY-MM-DD-slug.md`. Not every turn. Not a transcript. Not a wiki page.
 - **The set in play** (working overlay): `write_working`. Not a sitting. Not session start.
-- **A session brief** for the next sitting here: `write_working` to `syos.md`. Two beats: `check` and `jump`. If `syos_wait` is true on the pack, present the brief and wait. If only `syos_parked` is set, show it on the readout and do not freeze. `later: true` parks current. `clear: current|parked|all` clears. Act or skip clears that slot. Do not call a second tool.
+- **A session brief** for the next sitting here: `write_working` to `syos.md`. `check`, `jump`, `later`, and `clear` are YAML frontmatter inside `content`, not arguments. This posts the current brief:
+
+  ```yaml
+  ---
+  check: ...
+  jump: ...
+  ---
+  ```
+
+  `later: true` inside that fence parks the current brief. `clear: current`, `parked`, or `all` clears. Lines with no `---` fence are refused. If `syos_wait` is true on the pack, present the brief and wait. If only `syos_parked` is set, show it on the readout and do not freeze. Act or skip clears that slot. Do not call a second tool.
 - **A lookup the pack did not cover:** `search` inside that workspace only.
 
 If the `contextforge` tools are missing, the MCP server is not connected. See `install/mcp.json.examples.md`. Do not invent a parallel file store.

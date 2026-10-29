@@ -6,6 +6,11 @@
 
 - The public contract lives under `provisions/articles/`. `provisions/pack.yaml` points at that file. The shelf copy is unchanged.
 
+### Fixed
+
+- `write_working` says how to write the `syos.md` brief. `check`, `jump`, `later`, and `clear` are YAML frontmatter inside `content`, not arguments. The tool description shows the shape, and a refused write names it. Callers had read the fields as missing parameters.
+- The subscriber article shows that same fenced shape. The provision version is 0.4.2.
+
 ## 0.4.0
 
 ### Added

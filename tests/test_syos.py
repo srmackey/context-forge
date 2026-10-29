@@ -137,3 +137,11 @@ def test_clear_all_removes_file(store, harbor):
 def test_syos_write_refuses_unknown_shape(store, harbor):
     with pytest.raises(ValueError, match="syos"):
         store.write_working(harbor, "syos.md", "# just a note\n")
+
+
+def test_syos_refusal_names_the_frontmatter_shape(store, harbor):
+    with pytest.raises(ValueError, match="frontmatter inside content") as exc:
+        store.write_working(
+            harbor, "syos.md", "check: Hatch seals.\njump: Quay open.\n"
+        )
+    assert "---\\ncheck:" in str(exc.value)

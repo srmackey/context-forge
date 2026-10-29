@@ -361,8 +361,10 @@ class Storage:
             )
             if incoming is None:
                 raise ValueError(
-                    "syos.md writes are check+jump (new brief), later: true, "
-                    "or clear: current|parked|all"
+                    "syos.md fields are YAML frontmatter inside content, not arguments. "
+                    "New brief: '---\\ncheck: ...\\njump: ...\\n---'. "
+                    "Park: '---\\nlater: true\\n---'. "
+                    "Clear: '---\\nclear: current|parked|all\\n---'."
                 )
             state["current"] = incoming
         return self._save_syos(workspace, state)
