@@ -63,7 +63,7 @@ All workspace-scoped. Each result carries `ok`, `summary`, and (on success) `nex
 
 1. `get_pack` — session-start card: `always_include` plus FTS sittings, plus `recent_sittings`, plus `syos` / `syos_parked` / `syos_wait`. Pass `path` to bind if the workspace may be new. Without `query`, FTS sittings are empty. `recent_sittings` is the two latest sitting titles (search for more), not retrieval. Dropped hits listed, not silent. `syos_wait` true: present the brief and wait. Not a settle API.
 2. `write` — sitting freeze-frame. Path must be under `sittings/`. Convention: `sittings/YYYY-MM-DD-slug.md`.
-3. `write_working` — working overlay. Path must not be under `sittings/`. Reserved path `syos.md`: `check`+`jump` posts current, `later: true` parks, `clear: current|parked|all`. Wrong-layer calls name the other write tool.
+3. `write_working` — working overlay. Path must not be under `sittings/`. Reserved path `syos.md`, fields as YAML frontmatter in `content`: `check`+`jump` posts current, `later: true` parks, `clear: current|parked|all`. Wrong-layer calls name the other write tool.
 4. `search` — FTS inside one workspace when the pack is too narrow. Returns `{summary, count, hits}`, not a bare list.
 5. `bind_workspace` — register the folder only. Idempotent. Optional `always_include` replaces the owner list on the card. Skip if `get_pack` already has `path`.
 
